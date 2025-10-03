@@ -1,11 +1,11 @@
-using agents
+using Agents
 
 @agent struct Ghost(GridAgent{2})
     type :: String = "Ghost"
 end
 
-function agent_step!(_agent, _model)
-
+function agent_step!(agent, model)
+    randomwalk!(agent, model)
 end
 
 function initialize_model()
