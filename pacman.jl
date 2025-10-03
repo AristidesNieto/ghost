@@ -4,6 +4,10 @@ using Agents
     type :: String = "Ghost"
 end
 
+@agent struct PacMan(GridAgent{2})
+    type :: String = "PacMan"
+end
+
 matrix = [
     0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0;
     0 1 1 1 1 1 1 1 0 1 1 1 1 1 1 1 0;
@@ -22,29 +26,21 @@ matrix = [
 ]
 
 function agent_step!(agent, model)
-    #ranomwalk(agent, model)
-    moves = [(0,1), (0,-1), (1,0), (-1,0)]
-    posibles = []
-    x, y = agent.pos
-    nrows, ncols = size(matrix)
-    for (dx, dy) in moves
-        nx, ny = x + dx, y + dy
-        
-        if 1 ≤ nx ≤ nrows && 1 ≤ ny ≤ ncols && matrix[nx, ny] == 1
-            push!(posibles, (nx, ny))
+    if agent isa Ghost
+        pacman = first(filter(a -> a isa PacMan, allagents(model)))
+        # Solo moverse si hay PacMan
+        if !isnothing(pacman)
+            move_along_route!(agent, pacman.pos, model; allow_occupied=false, allow_diagonal=false)
         end
-    end
-    
-    if !isempty(posibles)
-        agent.pos = rand(posibles)
     end
 end
 
 function initialize_model()
-    space = GridSpace((5,5); periodic = false, metric = :manhattan)
-    model = StandardABM(Ghost, space; agent_step!)
+    space = GridSpace(size(matrix); periodic = false, metric = :manhattan)
+    model = StandardABM(Union{Ghost, PacMan}, space; agent_step!)
+    add_agent!(Ghost, pos=(3,3), model)
+    add_agent!(PacMan, pos=(10,10), model)
     return model
 end
 
 model = initialize_model()
-a = add_agent!(Ghost, pos=(3,3), model)

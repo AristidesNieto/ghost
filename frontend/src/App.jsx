@@ -18,20 +18,31 @@ const matrix = [
 ];
 
 const App = () => {
-  const [posX, setPosX] = useState(6);
-  const [posY, setPosY] = useState(8);
+  const [ghostX, setGhostX] = useState(6);
+  const [ghostY, setGhostY] = useState(8);
+  const [pacX, setPacX] = useState(9);
+  const [pacY, setPacY] = useState(9);
 
   useEffect(() => {
     const interval = setInterval(() => {
       fetch("http://localhost:8000/run")
         .then(res => res.json())
         .then(res => {
-          setPosX(res.agents[0].pos[0] - 1);
-          setPosY(res.agents[0].pos[1] - 1); 
+          // Busca los agentes por tipo
+          const ghost = res.agents.find(a => a.type === "Ghost");
+          const pacman = res.agents.find(a => a.type === "PacMan");
+          if (ghost) {
+            setGhostX(ghost.pos[0] - 1);
+            setGhostY(ghost.pos[1] - 1);
+          }
+          if (pacman) {
+            setPacX(pacman.pos[0] - 1);
+            setPacY(pacman.pos[1] - 1);
+          }
         });
     }, 1000);
     return () => clearInterval(interval);
-  }, [posX, posY]);
+  }, []);
 
   return ( 
     <div>
@@ -43,7 +54,8 @@ const App = () => {
             )
           )
         }
-        <image x={255 + 25 * posX} y={9 + 25 * posY} href="/ghost.png" width="25" height="25"/>
+        <image x={255 + 25 * ghostX} y={9 + 25 * ghostY} href="/ghost.png" width="25" height="25"/>
+        <image x={255 + 25 * pacX} y={9 + 25 * pacY} href="/pacman.png" width="25" height="25"/>
       </svg>
     </div>
   );
